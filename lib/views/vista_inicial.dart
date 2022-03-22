@@ -262,6 +262,7 @@ class VistaInicioEstado extends State<VistaInicio> {
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.max,
                   children: [
                     Text(
                       moneda.codigo,
