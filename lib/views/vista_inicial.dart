@@ -95,12 +95,12 @@ class VistaInicioEstado extends State<VistaInicio> {
           monedasControladores.add(nuevaMoneda);
         });
 
-        mostrarMensaje("Añadida correctamente");
+        mostrarMensaje("Added correctly.");
       } else {
-        mostrarMensaje("No existe una cryptomoneda con ese código.");
+        mostrarMensaje("There is no cryptocurrency with this code.");
       }
     }).catchError((error) {
-      mostrarMensaje("Error de conexion.");
+      mostrarMensaje("Connection error.");
     });
   }
 
@@ -117,11 +117,36 @@ class VistaInicioEstado extends State<VistaInicio> {
     return Colors.white;
   }
 
+  bool decidirTipoColorTexto(Color color) {
+    if ((color.red * 0.299 + color.green * 0.587 + color.blue * 0.114) > 186) {
+      return true;
+    }
+
+    return false;
+  }
+
   void ponerFocoEnTextFieldBuscarCryptos() {
     focusTextFieldBuscarCryptos.requestFocus();
   }
 
-  final TextStyle estiloTexto = const TextStyle(fontSize: 22);
+  final TextStyle ESTILO_VALOR_MONEDA =
+      const TextStyle(fontSize: 22, fontWeight: FontWeight.w600);
+
+  final TextStyle ESTILO_CABECERA_ASSET_VALUE =
+      const TextStyle(fontSize: 17, fontWeight: FontWeight.w700);
+
+  final TextStyle ESTILO_TEXTOS_ASSET_VALUE =
+      const TextStyle(fontSize: 14, fontWeight: FontWeight.w500);
+
+  final TextStyle ESTILO_TOTAL =
+      const TextStyle(fontSize: 18, fontWeight: FontWeight.w700);
+
+  final TextStyle ESTILO_TOTAL_VALOR =
+      const TextStyle(fontSize: 26, fontWeight: FontWeight.w900);
+
+  final TextStyle ESTILO_TOTAL_VALOR_DESPLEGABLE =
+      const TextStyle(fontSize: 23, fontWeight: FontWeight.w900);
+
   @override
   Widget build(BuildContext context) {
     //se inicializa la lista de elementos cripto vacía en cada build
@@ -235,9 +260,22 @@ class VistaInicioEstado extends State<VistaInicio> {
 
     void Function() funcionOnPressBotonMultiple;
 
-    Color colorCajaIcono = Color.fromARGB(255, 146, 144, 144);
+    Color colorCajaIcono;
+
+    Text textoTitulo = (true)
+        ? Text(
+            monedaControlador.moneda.codigo,
+            style: const TextStyle(
+                fontSize: 30, fontWeight: FontWeight.w900, color: Colors.black),
+          )
+        : Text(
+            monedaControlador.moneda.codigo,
+            style: const TextStyle(
+                fontSize: 30, fontWeight: FontWeight.w900, color: Colors.white),
+          );
 
     if (!monedaControlador.modoEliminar) {
+      colorCajaIcono = Color.fromARGB(255, 136, 125, 125);
       icono = Icon(
         Icons.refresh,
         color: monedaControlador.moneda.colorForeground,
@@ -245,9 +283,10 @@ class VistaInicioEstado extends State<VistaInicio> {
 
       funcionOnPressBotonMultiple = monedaControlador.actualizar;
     } else {
-      icono = Icon(
+      colorCajaIcono = const Color.fromARGB(255, 209, 17, 17);
+      icono = const Icon(
         Icons.delete_forever,
-        color: monedaControlador.moneda.colorForeground,
+        color: Colors.white,
       );
 
       funcionOnPressBotonMultiple = monedaControlador.eliminarElemento;
@@ -256,8 +295,8 @@ class VistaInicioEstado extends State<VistaInicio> {
     return GestureDetector(
       onLongPress: monedaControlador.cambiarModoEliminar,
       child: Container(
-        width: 250,
-        height: 300,
+        width: 270,
+        height: 290,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
             color: monedaControlador.moneda.colorIdentificador,
@@ -280,7 +319,7 @@ class VistaInicioEstado extends State<VistaInicio> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Expanded(
-                          flex: 10,
+                          flex: 5,
                           child: Container(
                             height: double.infinity,
                             alignment: Alignment.center,
@@ -289,17 +328,10 @@ class VistaInicioEstado extends State<VistaInicio> {
                               right:
                                   BorderSide(width: 3.0, color: Colors.black),
                             )),
-                            child: Text(
-                              monedaControlador.moneda.codigo,
-                              style: TextStyle(
-                                  color:
-                                      monedaControlador.moneda.colorForeground,
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold),
-                            ),
+                            child: textoTitulo,
                           )),
                       Expanded(
-                          flex: 9,
+                          flex: 3,
                           child: Row(
                             children: [
                               Expanded(
@@ -327,13 +359,14 @@ class VistaInicioEstado extends State<VistaInicio> {
                                           decoration: BoxDecoration(
                                               borderRadius:
                                                   BorderRadius.circular(10),
-                                              color: Colors.red,
+                                              color: Color.fromARGB(
+                                                  255, 67, 153, 34),
                                               border: Border.all(
                                                   width: 2.3,
                                                   color: monedaControlador
                                                       .moneda.colorForeground)),
                                           child: const Icon(
-                                            Icons.close,
+                                            Icons.check,
                                             color: Colors.white,
                                           ),
                                         ))),
@@ -352,18 +385,41 @@ class VistaInicioEstado extends State<VistaInicio> {
               Expanded(
                 child: Container(
                   width: double.infinity,
-                  color: const Color.fromARGB(255, 214, 213, 203),
+                  color: Color.fromARGB(255, 242, 245, 198),
                   child: Center(
-                    child: Text(monedaControlador.eurLab, style: estiloTexto),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  color: const Color.fromARGB(255, 192, 191, 186),
-                  child: Center(
-                    child: Text(monedaControlador.usdLab, style: estiloTexto),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (!monedaControlador.modoEliminar)
+                          Text(monedaControlador.eurLab,
+                              style: ESTILO_VALOR_MONEDA),
+                        if (!monedaControlador.modoEliminar)
+                          Text(
+                              monedaControlador
+                                  .simboloDivisaSeleccionadaPrecioUnitario,
+                              style: ESTILO_VALOR_MONEDA),
+                        if (monedaControlador.modoEliminar)
+                          Text(monedaControlador.moneda.codigo + " TO  ",
+                              style: ESTILO_VALOR_MONEDA),
+                        if (monedaControlador.modoEliminar)
+                          DropdownButton(
+                            value: monedaControlador
+                                .simboloDivisaSeleccionadaPrecioUnitario,
+                            icon: Icon(Icons.keyboard_arrow_down),
+                            items: MonedaController.LISTA_SIMBOLOS
+                                .map((String items) {
+                              return DropdownMenuItem(
+                                  value: items,
+                                  child: Text(
+                                    items,
+                                    style: ESTILO_VALOR_MONEDA,
+                                  ));
+                            }).toList(),
+                            onChanged: monedaControlador
+                                .eventoCambioSeleccionDivisaPrecioUnitaro,
+                          )
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -372,10 +428,85 @@ class VistaInicioEstado extends State<VistaInicio> {
                   child: Container(
                     width: double.infinity,
                     decoration: const BoxDecoration(
-                      color: Color.fromARGB(255, 165, 165, 160),
+                      color: Color.fromARGB(255, 226, 226, 183),
                     ),
-                    child: Center(
-                      child: Text(monedaControlador.gbpLab, style: estiloTexto),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 13, 0, 0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Text(
+                                "ASSET VALUE",
+                                style: ESTILO_CABECERA_ASSET_VALUE,
+                              )
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 17, 0, 0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Text(
+                                "AMOUNT : ",
+                                style: ESTILO_TEXTOS_ASSET_VALUE,
+                              ),
+                              if (!monedaControlador.modoEliminar)
+                                Text(
+                                  monedaControlador.amountLab,
+                                  style: ESTILO_CABECERA_ASSET_VALUE,
+                                )
+                              else
+                                SizedBox(
+                                  width: 100,
+                                  height: 20,
+                                  child: TextField(
+                                      controller: monedaControlador
+                                          .controladorInputTextoAmount,
+                                      keyboardType: TextInputType.number,
+                                      style: const TextStyle(
+                                          fontSize: 20.0, color: Colors.black)),
+                                )
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 20, 0, 0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Text(
+                                "TOTAL : ",
+                                style: ESTILO_TOTAL,
+                              ),
+                              if (!monedaControlador.modoEliminar)
+                                Text(
+                                  monedaControlador.totalLab,
+                                  style: ESTILO_TOTAL_VALOR,
+                                ),
+                              if (monedaControlador.modoEliminar)
+                                DropdownButton(
+                                  value: monedaControlador
+                                      .simboloDivisaSeleccionadaTotal,
+                                  icon: Icon(Icons.keyboard_arrow_down),
+                                  items: MonedaController.LISTA_SIMBOLOS
+                                      .map((String items) {
+                                    return DropdownMenuItem(
+                                        value: items,
+                                        child: Text(
+                                          items,
+                                          style: ESTILO_TOTAL_VALOR_DESPLEGABLE,
+                                        ));
+                                  }).toList(),
+                                  onChanged: monedaControlador
+                                      .eventoCambioSeleccionDivisaPrecioTotal,
+                                )
+                            ],
+                          ),
+                        )
+                      ],
                     ),
                   )),
             ],

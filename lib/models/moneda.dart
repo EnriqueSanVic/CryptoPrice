@@ -1,17 +1,27 @@
 import 'dart:ui';
+import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+enum Divisa { EUR, USD, GBP }
 
 class Moneda {
   String nombre;
   String codigo;
 
-  Color colorIdentificador;
+  Color colorIdentificador = Colors.white;
 
   Color colorForeground;
 
   double eur = 0.0;
   double usd = 0.0;
   double gbp = 0.0;
+
+  double cantidad = 0.0;
+
+  //por defecto la divisa seleccionada es el dolar
+  Divisa divisaSeleccionadaPrecioUnitario = Divisa.USD;
+
+  Divisa divisaSeleccionadaTotal = Divisa.USD;
 
   //Constroctor para una nueva moneda
   Moneda(
