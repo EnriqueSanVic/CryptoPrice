@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:ejemplo_api_crypto/models/moneda.dart';
+import 'package:ejemplo_api_crypto/save_utils/save_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
@@ -16,8 +17,10 @@ class VistaInicio extends StatefulWidget {
   State<VistaInicio> createState() => VistaInicioEstado();
 }
 
-class VistaInicioEstado extends State<VistaInicio> {
+class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
   final int TIEMPO_ACTUALIZACION = 1000;
+
+  SaveController guardadoControlador = SaveController();
 
   List<MonedaController> monedasControladores = [];
 
@@ -27,23 +30,66 @@ class VistaInicioEstado extends State<VistaInicio> {
 
   FocusNode focusTextFieldBuscarCryptos = FocusNode();
 
-  VistaInicioEstado() {
-    iniciar();
+  VistaInicioEstado();
+
+  @override
+  void initState() {
+    //se recuperan todas las monedas guardadas
+    recuperarEstado();
+
+    super.initState();
+
+    WidgetsBinding.instance!.addObserver(this);
   }
 
   @override
   void dispose() {
-    // Clean up the focus node when the Form is disposed.
     focusTextFieldBuscarCryptos.dispose();
+
+    WidgetsBinding.instance!.removeObserver(this);
+
+    guardarEstado();
 
     super.dispose();
   }
 
-  void iniciar() {
-    monedasControladores.add(MonedaController(
-        Moneda("Bitcoin", "BTC", Colors.amber, Colors.black), this));
-    monedasControladores.add(MonedaController(
-        Moneda("Ethereum", "ETH", Colors.blue, Colors.black), this));
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        recuperarEstado();
+        break;
+      case AppLifecycleState.inactive:
+        break;
+      case AppLifecycleState.paused:
+        guardarEstado();
+        break;
+      case AppLifecycleState.detached:
+        break;
+    }
+  }
+
+  void guardarEstado() {
+    List<Moneda> listaMonedas = [];
+
+    monedasControladores.forEach((controlador) {
+      listaMonedas.add(controlador.moneda);
+    });
+
+    print("guardando estado...");
+    guardadoControlador.guardarListaMonedas(listaMonedas);
+  }
+
+  void recuperarEstado() {
+    print("recuperando estado...");
+    guardadoControlador.recuperarListaMonedas().then((listaMonedas) {
+      setState(() {
+        monedasControladores = [];
+        for (int i = 0; i < listaMonedas.length; i++) {
+          monedasControladores.add(MonedaController(listaMonedas[i], this));
+        }
+      });
+    });
   }
 
   void addMoneda() {
@@ -238,7 +284,7 @@ class VistaInicioEstado extends State<VistaInicio> {
     );
   }
 
-  Padding crearFilaElementoCriptoMoneda(MonedaController monedaControlador) {
+  Widget crearFilaElementoCriptoMoneda(MonedaController monedaControlador) {
     return Padding(
       padding: const EdgeInsets.all(12.0),
       child: Row(

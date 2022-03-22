@@ -92,6 +92,7 @@ class MonedaController {
 
   Future<void> cambiarModoEliminar() async {
     vista.setState(() {
+      controladorInputTextoAmount.text = moneda.cantidad.toString();
       modoEliminar = true;
     });
 

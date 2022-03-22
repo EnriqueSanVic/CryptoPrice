@@ -1,6 +1,8 @@
 //Estilo
 import 'package:flutter/material.dart';
 
+const String FICHERO_GUARDADO = "datos.json";
+
 const Color colorPrincipal = Color.fromARGB(255, 126, 126, 126);
 
 const Color colorSecundario = Color.fromARGB(255, 251, 255, 0);
