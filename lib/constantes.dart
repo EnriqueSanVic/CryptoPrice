@@ -1,9 +1,9 @@
 //Estilo
 import 'package:flutter/material.dart';
 
-const Color colorPrincipal = Color.fromARGB(255, 244, 248, 3);
+const Color colorPrincipal = Color.fromARGB(255, 126, 126, 126);
 
-const Color colorSecundario = Color.fromARGB(255, 53, 199, 199);
+const Color colorSecundario = Color.fromARGB(255, 251, 255, 0);
 
 //API
 final String BASE_URL = "min-api.cryptocompare.com";

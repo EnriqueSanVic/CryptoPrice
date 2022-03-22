@@ -15,10 +15,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Crypto',
       theme: ThemeData(
-        primarySwatch: Colors.yellow,
+        primarySwatch: Colors.grey,
         scaffoldBackgroundColor: Color.fromARGB(255, 254, 255, 166),
         colorScheme: const ColorScheme.light(
-          primary: Color.fromARGB(255, 250, 228, 27),
+          primary: colorPrincipal,
           secondary: colorSecundario,
         ),
       ),

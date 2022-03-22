@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:ejemplo_api_crypto/models/moneda.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import '../constantes.dart';
-import '../models/moneda.dart';
+import '../controllers/moneda_controller.dart';
 
 class VistaInicio extends StatefulWidget {
   const VistaInicio({Key? key, required this.title}) : super(key: key);
@@ -18,7 +19,7 @@ class VistaInicio extends StatefulWidget {
 class VistaInicioEstado extends State<VistaInicio> {
   final int TIEMPO_ACTUALIZACION = 1000;
 
-  List<Moneda> monedas = [];
+  List<MonedaController> monedasControladores = [];
 
   bool visibilidadMenu = false;
 
@@ -39,8 +40,10 @@ class VistaInicioEstado extends State<VistaInicio> {
   }
 
   void iniciar() {
-    monedas.add(Moneda("Bitcoin", "BTC", Colors.amber, Colors.black, this));
-    monedas.add(Moneda("Ethereum", "ETH", Colors.blue, Colors.black, this));
+    monedasControladores.add(MonedaController(
+        Moneda("Bitcoin", "BTC", Colors.amber, Colors.black), this));
+    monedasControladores.add(MonedaController(
+        Moneda("Ethereum", "ETH", Colors.blue, Colors.black), this));
   }
 
   void addMoneda() {
@@ -72,8 +75,10 @@ class VistaInicioEstado extends State<VistaInicio> {
 
     Color colorForeground = decidirColorTexto(colorBackground);
 
-    Moneda nuevaMoneda = Moneda(codigo.toUpperCase(), codigo.toUpperCase(),
-        colorBackground, colorForeground, this);
+    MonedaController nuevaMoneda = MonedaController(
+        Moneda(codigo.toUpperCase(), codigo.toUpperCase(), colorBackground,
+            colorForeground),
+        this);
 
     Future<bool> promesa = nuevaMoneda.comprobarExistenciaCodigo();
 
@@ -87,15 +92,15 @@ class VistaInicioEstado extends State<VistaInicio> {
           //se cierra el menu de añadir
           visibilidadMenu = false;
           //se añade la nueva moneda
-          monedas.add(nuevaMoneda);
+          monedasControladores.add(nuevaMoneda);
         });
 
-        mostrarMensaje("Añadida correctamente");
+        mostrarMensaje("Added correctly.");
       } else {
-        mostrarMensaje("No existe una cryptomoneda con ese código.");
+        mostrarMensaje("There is no cryptocurrency with this code.");
       }
     }).catchError((error) {
-      mostrarMensaje("Error de conexion.");
+      mostrarMensaje("Connection error.");
     });
   }
 
@@ -112,19 +117,45 @@ class VistaInicioEstado extends State<VistaInicio> {
     return Colors.white;
   }
 
+  bool decidirTipoColorTexto(Color color) {
+    if ((color.red * 0.299 + color.green * 0.587 + color.blue * 0.114) > 186) {
+      return true;
+    }
+
+    return false;
+  }
+
   void ponerFocoEnTextFieldBuscarCryptos() {
     focusTextFieldBuscarCryptos.requestFocus();
   }
 
-  final TextStyle estiloTexto = const TextStyle(fontSize: 22);
+  final TextStyle ESTILO_VALOR_MONEDA =
+      const TextStyle(fontSize: 22, fontWeight: FontWeight.w600);
+
+  final TextStyle ESTILO_CABECERA_ASSET_VALUE =
+      const TextStyle(fontSize: 17, fontWeight: FontWeight.w700);
+
+  final TextStyle ESTILO_TEXTOS_ASSET_VALUE =
+      const TextStyle(fontSize: 14, fontWeight: FontWeight.w500);
+
+  final TextStyle ESTILO_TOTAL =
+      const TextStyle(fontSize: 18, fontWeight: FontWeight.w700);
+
+  final TextStyle ESTILO_TOTAL_VALOR =
+      const TextStyle(fontSize: 26, fontWeight: FontWeight.w900);
+
+  final TextStyle ESTILO_TOTAL_VALOR_DESPLEGABLE =
+      const TextStyle(fontSize: 23, fontWeight: FontWeight.w900);
+
   @override
   Widget build(BuildContext context) {
     //se inicializa la lista de elementos cripto vacía en cada build
     List<Widget> hijosColumnaPrincipal = [];
 
     //se generan con las monedas existentes en el array de monedas
-    monedas.forEach((moneda) {
-      hijosColumnaPrincipal.add(crearFilaElementoCriptoMoneda(moneda));
+    monedasControladores.forEach((monedaControlador) {
+      hijosColumnaPrincipal
+          .add(crearFilaElementoCriptoMoneda(monedaControlador));
     });
 
     return Scaffold(
@@ -139,7 +170,6 @@ class VistaInicioEstado extends State<VistaInicio> {
             child: SingleChildScrollView(
               child: Center(
                 child: Column(
-                  key: UniqueKey(),
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: hijosColumnaPrincipal,
                 ),
@@ -157,9 +187,9 @@ class VistaInicioEstado extends State<VistaInicio> {
                   children: [
                     const Text(
                       "CODE : ",
-                      style: TextStyle(fontSize: 25, color: colorPrincipal),
+                      style: TextStyle(fontSize: 25, color: colorSecundario),
                     ),
-                    Container(
+                    SizedBox(
                       width: 150.0,
                       height: 30.0,
                       child: TextField(
@@ -168,14 +198,14 @@ class VistaInicioEstado extends State<VistaInicio> {
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontSize: 24,
-                          color: colorPrincipal,
+                          color: colorSecundario,
                         ),
                         decoration: const InputDecoration(
                           enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: colorPrincipal),
+                            borderSide: BorderSide(color: colorSecundario),
                           ),
                           focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: colorPrincipal),
+                            borderSide: BorderSide(color: colorSecundario),
                           ),
                         ),
                       ),
@@ -185,10 +215,13 @@ class VistaInicioEstado extends State<VistaInicio> {
                       icon: Container(
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(10),
-                            color: const Color.fromARGB(100, 116, 106, 106),
+                            color: Color.fromARGB(0, 0, 0, 0),
                             border:
-                                Border.all(width: 2.3, color: colorPrincipal)),
-                        child: const Icon(Icons.add),
+                                Border.all(width: 2.3, color: colorSecundario)),
+                        child: const Icon(
+                          Icons.add,
+                          color: colorSecundario,
+                        ),
                       ),
                       color: colorPrincipal,
                     )
@@ -205,133 +238,302 @@ class VistaInicioEstado extends State<VistaInicio> {
     );
   }
 
-  Padding crearFilaElementoCriptoMoneda(Moneda moneda) {
+  Padding crearFilaElementoCriptoMoneda(MonedaController monedaControlador) {
     return Padding(
       padding: const EdgeInsets.all(12.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           //contenedor de capa que contiene a todos
-          crearContenedorCriptoMoneda(moneda),
+          crearContenedorCriptoMoneda(monedaControlador),
         ],
       ),
     );
   }
 
-  Widget crearContenedorCriptoMoneda(Moneda moneda) {
+  Widget crearContenedorCriptoMoneda(MonedaController monedaControlador) {
     //spinner
-    var spinkit = SpinKitSpinningCircle(
-      color: moneda.colorForeground,
-      size: 20.0,
-    );
 
-    Icon icono;
-    Color colorCajaIcono = Color.fromARGB(255, 146, 144, 144);
+    Color colorForeground;
+    Text textoTitulo;
+    Icon iconoRefrescar;
 
-    if (!moneda.modoEliminar) {
-      icono = Icon(
+    if (decidirTipoColorTexto(monedaControlador.moneda.colorIdentificador)) {
+      textoTitulo = Text(
+        monedaControlador.moneda.codigo,
+        style: const TextStyle(
+            fontSize: 30, fontWeight: FontWeight.w900, color: Colors.black),
+      );
+      iconoRefrescar = const Icon(
         Icons.refresh,
-        color: moneda.colorForeground,
+        size: 37,
+        color: Colors.black,
       );
+      colorForeground = Colors.black;
     } else {
-      icono = Icon(
-        Icons.delete_forever,
-        color: moneda.colorForeground,
+      textoTitulo = Text(
+        monedaControlador.moneda.codigo,
+        style: const TextStyle(
+            fontSize: 30, fontWeight: FontWeight.w900, color: Colors.white),
       );
+      iconoRefrescar = const Icon(
+        Icons.refresh,
+        size: 37,
+        color: Colors.white,
+      );
+      colorForeground = Colors.white;
     }
 
+    var spinkit = SpinKitSpinningCircle(
+      color: colorForeground,
+      size: 30.0,
+    );
+
     return GestureDetector(
-      onLongPress: moneda.cambiarModoEliminar,
+      onLongPress: monedaControlador.cambiarModoEliminar,
       child: Container(
-        width: 200,
-        height: 300,
+        width: 300,
+        height: 290,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
-            color: moneda.colorIdentificador,
+            color: monedaControlador.moneda.colorIdentificador,
             border: Border.all(width: 2.6, color: Colors.black)),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: moneda.colorIdentificador,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    Text(
-                      moneda.codigo,
-                      style: TextStyle(
-                          color: moneda.colorForeground, fontSize: 22),
-                    ),
-                    IconButton(
-                        onPressed: moneda.toqueBotonMultiple,
-                        icon: Container(
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              color: colorCajaIcono,
-                              border: Border.all(
-                                  width: 2.3, color: moneda.colorForeground)),
-                          child: icono,
-                        )),
-                    if (moneda.modoEliminar)
-                      IconButton(
-                          onPressed: moneda.cerrarModoEliminar,
-                          icon: Container(
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color: Colors.red,
-                                border: Border.all(
-                                    width: 2.3, color: moneda.colorForeground)),
-                            child: const Icon(
-                              Icons.close,
-                              color: Colors.white,
-                            ),
-                          )),
-                    Visibility(
-                        visible: moneda.cargando,
-                        child:
-                            spinkit), //la visibilidad del spinnner se controla por la variable cargando
-                  ],
-                ),
-              ),
-            ),
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                color: const Color.fromARGB(255, 214, 213, 203),
-                child: Center(
-                  child: Text(moneda.eurLab, style: estiloTexto),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                color: const Color.fromARGB(255, 192, 191, 186),
-                child: Center(
-                  child: Text(moneda.usdLab, style: estiloTexto),
-                ),
-              ),
-            ),
-            Expanded(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
                 child: Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                  color: Color.fromARGB(255, 165, 165, 160),
-                  borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(10),
-                      bottomRight: Radius.circular(10))),
-              child: Center(
-                child: Text(moneda.gbpLab, style: estiloTexto),
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    border: const Border(
+                        bottom: BorderSide(width: 2, color: Colors.black)),
+                    color: monedaControlador.moneda.colorIdentificador,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Expanded(
+                          flex: 5,
+                          child: Container(
+                            height: double.infinity,
+                            alignment: Alignment.center,
+                            decoration: const BoxDecoration(
+                                border: Border(
+                              right:
+                                  BorderSide(width: 3.0, color: Colors.black),
+                            )),
+                            child: textoTitulo,
+                          )),
+                      Expanded(
+                          flex: 3,
+                          child: Row(
+                            children: [
+                              if (!monedaControlador.modoEliminar &&
+                                  !monedaControlador.cargando)
+                                Expanded(
+                                    flex: 2,
+                                    child: IconButton(
+                                        onPressed: monedaControlador.actualizar,
+                                        iconSize: 45,
+                                        icon: Container(
+                                          decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              color: const Color.fromARGB(
+                                                  255, 136, 125, 125),
+                                              border: Border.all(
+                                                  width: 2.3,
+                                                  color: colorForeground)),
+                                          child: iconoRefrescar,
+                                        ))),
+                              if (monedaControlador.modoEliminar &&
+                                  !monedaControlador.cargando)
+                                Expanded(
+                                    flex: 2,
+                                    child: IconButton(
+                                        onPressed:
+                                            monedaControlador.eliminarElemento,
+                                        icon: Container(
+                                          decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              color: const Color.fromARGB(
+                                                  255, 209, 17, 17),
+                                              border: Border.all(
+                                                  width: 2.3,
+                                                  color: monedaControlador
+                                                      .moneda.colorForeground)),
+                                          child: const Icon(
+                                            Icons.delete_forever,
+                                            color: Colors.white,
+                                          ),
+                                        ))),
+                              if (monedaControlador.modoEliminar &&
+                                  !monedaControlador.cargando)
+                                Expanded(
+                                    flex: 2,
+                                    child: IconButton(
+                                        onPressed: monedaControlador
+                                            .cerrarModoEliminar,
+                                        icon: Container(
+                                          decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              color: const Color.fromARGB(
+                                                  255, 67, 153, 34),
+                                              border: Border.all(
+                                                  width: 2.3,
+                                                  color: monedaControlador
+                                                      .moneda.colorForeground)),
+                                          child: const Icon(
+                                            Icons.check,
+                                            color: Colors.white,
+                                          ),
+                                        ))),
+                              Visibility(
+                                  visible: monedaControlador.cargando,
+                                  child: Expanded(
+                                    flex: 2,
+                                    child: spinkit,
+                                  ))
+                            ],
+                          )),
+                    ],
+                  ),
+                ),
               ),
-            )),
-          ],
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  color: Color.fromARGB(255, 242, 245, 198),
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (!monedaControlador.modoEliminar)
+                          Text(monedaControlador.valorUnitarioLab,
+                              style: ESTILO_VALOR_MONEDA),
+                        if (!monedaControlador.modoEliminar)
+                          Text(
+                              monedaControlador
+                                  .simboloDivisaSeleccionadaPrecioUnitario,
+                              style: ESTILO_VALOR_MONEDA),
+                        if (monedaControlador.modoEliminar)
+                          Text(monedaControlador.moneda.codigo + " TO  ",
+                              style: ESTILO_VALOR_MONEDA),
+                        if (monedaControlador.modoEliminar)
+                          DropdownButton(
+                            value: monedaControlador
+                                .simboloDivisaSeleccionadaPrecioUnitario,
+                            icon: Icon(Icons.keyboard_arrow_down),
+                            items: MonedaController.LISTA_SIMBOLOS
+                                .map((String items) {
+                              return DropdownMenuItem(
+                                  value: items,
+                                  child: Text(
+                                    items,
+                                    style: ESTILO_VALOR_MONEDA,
+                                  ));
+                            }).toList(),
+                            onChanged: monedaControlador
+                                .eventoCambioSeleccionDivisaPrecioUnitaro,
+                          )
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                  flex: 2,
+                  child: Container(
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                      color: Color.fromARGB(255, 226, 226, 183),
+                    ),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 13, 0, 0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Text(
+                                "ASSET VALUE",
+                                style: ESTILO_CABECERA_ASSET_VALUE,
+                              )
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 17, 0, 0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Text(
+                                "AMOUNT : ",
+                                style: ESTILO_TEXTOS_ASSET_VALUE,
+                              ),
+                              if (!monedaControlador.modoEliminar)
+                                Text(
+                                  monedaControlador.amountLab,
+                                  style: ESTILO_CABECERA_ASSET_VALUE,
+                                )
+                              else
+                                SizedBox(
+                                  width: 100,
+                                  height: 20,
+                                  child: TextField(
+                                      controller: monedaControlador
+                                          .controladorInputTextoAmount,
+                                      keyboardType: TextInputType.number,
+                                      style: const TextStyle(
+                                          fontSize: 20.0, color: Colors.black)),
+                                )
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 20, 0, 0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Text(
+                                "TOTAL : ",
+                                style: ESTILO_TOTAL,
+                              ),
+                              if (!monedaControlador.modoEliminar)
+                                Text(
+                                  monedaControlador.totalLab,
+                                  style: ESTILO_TOTAL_VALOR,
+                                ),
+                              if (monedaControlador.modoEliminar)
+                                DropdownButton(
+                                  value: monedaControlador
+                                      .simboloDivisaSeleccionadaTotal,
+                                  icon: Icon(Icons.keyboard_arrow_down),
+                                  items: MonedaController.LISTA_SIMBOLOS
+                                      .map((String items) {
+                                    return DropdownMenuItem(
+                                        value: items,
+                                        child: Text(
+                                          items,
+                                          style: ESTILO_TOTAL_VALOR_DESPLEGABLE,
+                                        ));
+                                  }).toList(),
+                                  onChanged: monedaControlador
+                                      .eventoCambioSeleccionDivisaPrecioTotal,
+                                )
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  )),
+            ],
+          ),
         ),
       ),
     );

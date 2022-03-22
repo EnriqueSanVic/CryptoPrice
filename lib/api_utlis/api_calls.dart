@@ -1,16 +1,19 @@
 import 'dart:convert';
 
 import 'package:ejemplo_api_crypto/constantes.dart';
-import 'package:ejemplo_api_crypto/models/moneda.dart';
+import 'package:ejemplo_api_crypto/controllers/moneda_controller.dart';
 import 'package:http/http.dart';
 
-Future<void> peticionCryptoCompare(Moneda moneda) async {
-  final parametrosPeticion = {
+import '../models/moneda.dart';
+
+Future<void> peticionCryptoCompare(MonedaController monedaControlador) async {
+  final Map<String, String> parametrosPeticion = {
     'api_key': API_KEY,
-    'fsym': moneda.codigo,
+    'fsym': monedaControlador.moneda.codigo,
     'tsyms': 'EUR,USD,GBP'
   };
-  var url = Uri.https(BASE_URL, RUTA, parametrosPeticion);
+
+  Uri url = Uri.https(BASE_URL, RUTA, parametrosPeticion);
 
   Response res = await get(url);
 
@@ -18,16 +21,18 @@ Future<void> peticionCryptoCompare(Moneda moneda) async {
   if (res.statusCode == 200) {
     Map<String, dynamic> body = jsonDecode(res.body);
 
-    moneda.setEur(body['EUR']);
-    moneda.setUsd(body['USD']);
-    moneda.setGbp(body['GBP']);
+    print(res.body);
+
+    monedaControlador.setEur(body['EUR']);
+    monedaControlador.setUsd(body['USD']);
+    monedaControlador.setGbp(body['GBP']);
   } else {
     print("ERROR DE CONEXION API");
   }
 }
 
 Future<bool> comprobarExistenciaMoneda(Moneda moneda) async {
-  final parametrosPeticion = {
+  final Map<String, String> parametrosPeticion = {
     'api_key': API_KEY,
     'fsym': moneda.codigo,
     'tsyms': 'EUR,USD,GBP'
