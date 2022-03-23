@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Crypto',
+      title: TITULO,
       theme: ThemeData(
         primarySwatch: Colors.grey,
         scaffoldBackgroundColor: Color.fromARGB(255, 254, 255, 166),
@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
           secondary: COLOR_SECUNDARIO,
         ),
       ),
-      home: const VistaInicio(title: 'Crypto Price'),
+      home: const VistaInicio(title: TITULO),
     );
   }
 }

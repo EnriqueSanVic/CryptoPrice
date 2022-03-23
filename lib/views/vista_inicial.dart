@@ -39,6 +39,7 @@ class VistaInicioEstado extends State<VistaInicio>
   @override
   void initState() {
     //se recuperan todas las monedas guardadas
+
     recuperarEstado();
 
     super.initState();
@@ -47,6 +48,10 @@ class VistaInicioEstado extends State<VistaInicio>
     WidgetsBinding.instance!.addObserver(this);
 
     if (_isDesktopPlatform()) {
+      WindowManager.instance.setTitle(TITULO);
+
+      WindowManager.instance.setSize(const Size(700, 800));
+
       windowManager.addListener(this);
 
       windowManager.setPreventClose(true);

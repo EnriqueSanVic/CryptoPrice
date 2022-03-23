@@ -1,6 +1,8 @@
 //Estilo
 import 'package:flutter/material.dart';
 
+const String TITULO = "Crypto Price";
+
 const String FICHERO_GUARDADO = "datos.json";
 
 const Color COLOR_PRINCIPAL = Color.fromARGB(255, 126, 126, 126);
