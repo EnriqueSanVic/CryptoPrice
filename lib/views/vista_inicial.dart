@@ -17,6 +17,7 @@ class VistaInicio extends StatefulWidget {
   State<VistaInicio> createState() => VistaInicioEstado();
 }
 
+// se añade la interfaz WidgetsBindingObserver para poder escuchar el ciclo de vida de la vista
 class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
   final int TIEMPO_ACTUALIZACION = 1000;
 
@@ -39,6 +40,7 @@ class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
 
     super.initState();
 
+    //para que tenga en cuenta los cambio en el ciclo de vida de esta vista
     WidgetsBinding.instance!.addObserver(this);
   }
 
@@ -46,6 +48,7 @@ class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
   void dispose() {
     focusTextFieldBuscarCryptos.dispose();
 
+    //para que deje de tener en cuenta los cambio en el ciclo de vida de esta vista
     WidgetsBinding.instance!.removeObserver(this);
 
     guardarEstado();
@@ -53,6 +56,7 @@ class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
     super.dispose();
   }
 
+  //Función escuchadora que se llama cuando se produce un cambio en el diclo de vida de la vista
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
@@ -117,7 +121,11 @@ class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
   void insertarNuevaMoneda() {
     String codigo = controladorInputTextoMenu.text;
 
-    Color colorBackground = generarColorFondoRandom();
+    Color? colorBackground = FILTRO_COLORES_MONEDAS[codigo.toUpperCase()];
+
+    if (colorBackground == null) {
+      colorBackground = generarColorFondoRandom();
+    }
 
     Color colorForeground = decidirColorTexto(colorBackground);
 
@@ -137,8 +145,11 @@ class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
           controladorInputTextoMenu.clear();
           //se cierra el menu de añadir
           visibilidadMenu = false;
-          //se añade la nueva moneda
-          monedasControladores.add(nuevaMoneda);
+          //se añade la nueva moneda al principio
+          monedasControladores.insert(0, nuevaMoneda);
+
+          //una vez insertada se empieza actualizar una primera vez
+          nuevaMoneda.actualizar();
         });
 
         mostrarMensaje("Added correctly.");
@@ -207,7 +218,7 @@ class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Crypto Price',
-            style: TextStyle(color: colorSecundario)),
+            style: TextStyle(color: COLOR_SECUNDARIO)),
       ),
       body: Stack(
         children: [
@@ -233,7 +244,7 @@ class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
                   children: [
                     const Text(
                       "CODE : ",
-                      style: TextStyle(fontSize: 25, color: colorSecundario),
+                      style: TextStyle(fontSize: 25, color: COLOR_SECUNDARIO),
                     ),
                     SizedBox(
                       width: 150.0,
@@ -244,14 +255,14 @@ class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontSize: 24,
-                          color: colorSecundario,
+                          color: COLOR_SECUNDARIO,
                         ),
                         decoration: const InputDecoration(
                           enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: colorSecundario),
+                            borderSide: BorderSide(color: COLOR_SECUNDARIO),
                           ),
                           focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: colorSecundario),
+                            borderSide: BorderSide(color: COLOR_SECUNDARIO),
                           ),
                         ),
                       ),
@@ -262,14 +273,14 @@ class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(10),
                             color: Color.fromARGB(0, 0, 0, 0),
-                            border:
-                                Border.all(width: 2.3, color: colorSecundario)),
+                            border: Border.all(
+                                width: 2.3, color: COLOR_SECUNDARIO)),
                         child: const Icon(
                           Icons.add,
-                          color: colorSecundario,
+                          color: COLOR_SECUNDARIO,
                         ),
                       ),
-                      color: colorPrincipal,
+                      color: COLOR_PRINCIPAL,
                     )
                   ],
                 ),
@@ -280,6 +291,9 @@ class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
         child: const Icon(Icons.add),
         onPressed: addMoneda,
         heroTag: null,
+        backgroundColor: COLOR_TERCIARIO,
+        foregroundColor: COLOR_SECUNDARIO,
+        focusColor: COLOR_PRINCIPAL,
       ),
     );
   }

@@ -6,7 +6,7 @@ import 'package:ejemplo_api_crypto/save_utils/file_handler.dart';
 import '../models/moneda.dart';
 
 class SaveController {
-  FileHandler manejadorFichero = FileHandler(FICHERO_GUARDADO);
+  final FileHandler _manejadorFichero = FileHandler(FICHERO_GUARDADO);
 
   final String SEPARADOR = "#_SEP_#";
 
@@ -23,13 +23,13 @@ class SaveController {
         contenidoFichero += SEPARADOR;
       }
     }
-    manejadorFichero.escribirFichero(contenidoFichero);
+    _manejadorFichero.escribirFichero(contenidoFichero);
   }
 
   Future<List<Moneda>> recuperarListaMonedas() async {
     List<Moneda> monedas = [];
     //esperamos a la lectura
-    String ficheroCrudo = await manejadorFichero.leerFichero();
+    String ficheroCrudo = await _manejadorFichero.leerFichero();
 
     print(ficheroCrudo);
 

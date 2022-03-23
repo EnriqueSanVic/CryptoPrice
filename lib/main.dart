@@ -18,8 +18,8 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.grey,
         scaffoldBackgroundColor: Color.fromARGB(255, 254, 255, 166),
         colorScheme: const ColorScheme.light(
-          primary: colorPrincipal,
-          secondary: colorSecundario,
+          primary: COLOR_PRINCIPAL,
+          secondary: COLOR_SECUNDARIO,
         ),
       ),
       home: const VistaInicio(title: 'Crypto Price'),
