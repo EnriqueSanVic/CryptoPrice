@@ -17,11 +17,13 @@ class FileHandler {
 
   Future<File> get _localFile async {
     final path = await _localPath;
-    return File('$path/' + fichero);
+    return File(path + '/' + fichero);
   }
 
   Future<File> escribirFichero(String contenido) async {
-    final file = await _localFile;
+    final File file = await _localFile;
+
+    print("Path: " + file.path);
 
     // Write the file
     return file.writeAsString(contenido);
@@ -36,7 +38,6 @@ class FileHandler {
 
       return contenido;
     } catch (e) {
-      // If encountering an error, return 0
       return "Error";
     }
   }

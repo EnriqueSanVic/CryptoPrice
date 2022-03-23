@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:ejemplo_api_crypto/constantes.dart';
-import 'package:ejemplo_api_crypto/controllers/moneda_controller.dart';
+import 'package:crypto_price/constantes.dart';
+import 'package:crypto_price/controllers/moneda_controller.dart';
 import 'package:http/http.dart';
 
 import '../models/moneda.dart';

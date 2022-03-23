@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:math';
-import 'package:ejemplo_api_crypto/models/moneda.dart';
-import 'package:ejemplo_api_crypto/save_utils/save_controller.dart';
+import 'package:crypto_price/models/moneda.dart';
+import 'package:crypto_price/save_utils/save_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:window_manager/window_manager.dart';
+import 'dart:io' show Platform;
 
 import '../constantes.dart';
 import '../controllers/moneda_controller.dart';
@@ -18,8 +20,9 @@ class VistaInicio extends StatefulWidget {
 }
 
 // se añade la interfaz WidgetsBindingObserver para poder escuchar el ciclo de vida de la vista
-class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
-  final int TIEMPO_ACTUALIZACION = 1000;
+class VistaInicioEstado extends State<VistaInicio>
+    with WidgetsBindingObserver, WindowListener {
+  final int MIN_WIDTH = 1000;
 
   SaveController guardadoControlador = SaveController();
 
@@ -42,7 +45,18 @@ class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
 
     //para que tenga en cuenta los cambio en el ciclo de vida de esta vista
     WidgetsBinding.instance!.addObserver(this);
+
+    if (_isDesktopPlatform()) {
+      windowManager.addListener(this);
+
+      windowManager.setPreventClose(true);
+    }
+
+    setState(() {});
   }
+
+  bool _isDesktopPlatform() =>
+      (Platform.isWindows || Platform.isMacOS || Platform.isLinux);
 
   @override
   void dispose() {
@@ -50,6 +64,10 @@ class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
 
     //para que deje de tener en cuenta los cambio en el ciclo de vida de esta vista
     WidgetsBinding.instance!.removeObserver(this);
+
+    if (_isDesktopPlatform()) {
+      windowManager.removeListener(this);
+    }
 
     guardarEstado();
 
@@ -70,6 +88,38 @@ class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
         break;
       case AppLifecycleState.detached:
         break;
+    }
+  }
+
+  //para plataformas desktop
+  @override
+  void onWindowClose() async {
+    bool _isPreventClose = await windowManager.isPreventClose();
+    if (_isPreventClose) {
+      showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            title: const Text('Are you sure you want to close this window?'),
+            actions: [
+              TextButton(
+                child: const Text('No'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: const Text('Yes'),
+                onPressed: () async {
+                  guardarEstado();
+                  Navigator.of(context).pop();
+                  await windowManager.destroy();
+                },
+              ),
+            ],
+          );
+        },
+      );
     }
   }
 
@@ -269,14 +319,16 @@ class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
                     ),
                     IconButton(
                       onPressed: insertarNuevaMoneda,
+                      iconSize: 40,
                       icon: Container(
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(10),
-                            color: Color.fromARGB(0, 0, 0, 0),
+                            color: const Color.fromARGB(0, 0, 0, 0),
                             border: Border.all(
                                 width: 2.3, color: COLOR_SECUNDARIO)),
                         child: const Icon(
                           Icons.add,
+                          size: 35,
                           color: COLOR_SECUNDARIO,
                         ),
                       ),
@@ -291,23 +343,26 @@ class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
         child: const Icon(Icons.add),
         onPressed: addMoneda,
         heroTag: null,
-        backgroundColor: COLOR_TERCIARIO,
+        backgroundColor: COLOR_PRINCIPAL,
         foregroundColor: COLOR_SECUNDARIO,
-        focusColor: COLOR_PRINCIPAL,
+        focusColor: COLOR_TERCIARIO,
       ),
     );
   }
 
   Widget crearFilaElementoCriptoMoneda(MonedaController monedaControlador) {
-    return Padding(
-      padding: const EdgeInsets.all(12.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          //contenedor de capa que contiene a todos
-          crearContenedorCriptoMoneda(monedaControlador),
-        ],
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Expanded(
+          flex: 1,
+          child: //contenedor de capa que contiene a todos
+              Padding(
+            padding: EdgeInsets.only(top: 15, bottom: 15, left: 30, right: 30),
+            child: crearContenedorCriptoMoneda(monedaControlador),
+          ),
+        ),
+      ],
     );
   }
 
@@ -317,6 +372,7 @@ class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
     Color colorForeground;
     Text textoTitulo;
     Icon iconoRefrescar;
+    Icon iconoEditar;
 
     if (decidirTipoColorTexto(monedaControlador.moneda.colorIdentificador)) {
       textoTitulo = Text(
@@ -326,6 +382,12 @@ class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
       );
       iconoRefrescar = const Icon(
         Icons.refresh,
+        size: 37,
+        color: Colors.black,
+      );
+
+      iconoEditar = const Icon(
+        Icons.edit,
         size: 37,
         color: Colors.black,
       );
@@ -341,6 +403,11 @@ class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
         size: 37,
         color: Colors.white,
       );
+      iconoEditar = const Icon(
+        Icons.edit,
+        size: 37,
+        color: Colors.white,
+      );
       colorForeground = Colors.white;
     }
 
@@ -352,7 +419,6 @@ class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
     return GestureDetector(
       onLongPress: monedaControlador.cambiarModoEliminar,
       child: Container(
-        width: 300,
         height: 290,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
@@ -409,11 +475,32 @@ class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
                                                   color: colorForeground)),
                                           child: iconoRefrescar,
                                         ))),
+                              if (!monedaControlador.modoEliminar &&
+                                  !monedaControlador.cargando &&
+                                  _isDesktopPlatform())
+                                Expanded(
+                                    flex: 2,
+                                    child: IconButton(
+                                        onPressed: monedaControlador
+                                            .cambiarModoEliminar,
+                                        iconSize: 45,
+                                        icon: Container(
+                                          decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              color: const Color.fromARGB(
+                                                  255, 136, 125, 125),
+                                              border: Border.all(
+                                                  width: 2.3,
+                                                  color: colorForeground)),
+                                          child: iconoEditar,
+                                        ))),
                               if (monedaControlador.modoEliminar &&
                                   !monedaControlador.cargando)
                                 Expanded(
                                     flex: 2,
                                     child: IconButton(
+                                        iconSize: 40,
                                         onPressed:
                                             monedaControlador.eliminarElemento,
                                         icon: Container(
@@ -428,6 +515,7 @@ class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
                                                       .moneda.colorForeground)),
                                           child: const Icon(
                                             Icons.delete_forever,
+                                            size: 35,
                                             color: Colors.white,
                                           ),
                                         ))),
@@ -436,6 +524,7 @@ class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
                                 Expanded(
                                     flex: 2,
                                     child: IconButton(
+                                        iconSize: 40,
                                         onPressed: monedaControlador
                                             .cerrarModoEliminar,
                                         icon: Container(
@@ -450,6 +539,7 @@ class VistaInicioEstado extends State<VistaInicio> with WidgetsBindingObserver {
                                                       .moneda.colorForeground)),
                                           child: const Icon(
                                             Icons.check,
+                                            size: 35,
                                             color: Colors.white,
                                           ),
                                         ))),

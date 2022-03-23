@@ -1,4 +1,4 @@
-import 'package:ejemplo_api_crypto/api_utlis/api_calls.dart';
+import 'package:crypto_price/api_utlis/api_calls.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 

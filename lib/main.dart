@@ -1,4 +1,4 @@
-import 'package:ejemplo_api_crypto/constantes.dart';
+import 'package:crypto_price/constantes.dart';
 import 'package:flutter/material.dart';
 import 'views/vista_inicial.dart';
 
